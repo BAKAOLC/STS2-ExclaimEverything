@@ -128,7 +128,7 @@ internal static class TextTransformer
 
     private static bool HasBlockingTerminalSymbol(char c)
     {
-        if (IsPercentSign(c))
+        if (IsPercentSign(c) || IsUpgradeMarker(c))
             return false;
 
         return char.IsPunctuation(c) || char.IsSymbol(c);
@@ -137,6 +137,11 @@ internal static class TextTransformer
     private static bool IsPercentSign(char c)
     {
         return c is '%' or '％';
+    }
+
+    private static bool IsUpgradeMarker(char c)
+    {
+        return c is '+' or '＋';
     }
 
     private static bool IsOpeningBracket(char c)
