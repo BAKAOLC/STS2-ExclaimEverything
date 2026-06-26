@@ -19,7 +19,7 @@ public static class Main
     {
         Logger.Info($"Mod ID: {Const.ModId}");
         Logger.Info($"Version: {Const.Version}");
-        Logger.Info("Initializing mod...");
+        Logger.Info("Initializing mod!");
 
         try
         {
@@ -28,19 +28,19 @@ public static class Main
 
             if (!RitsuLibFramework.ApplyRequiredPatcher(patcher, () => IsModActive = false))
             {
-                Logger.Error("Mod initialization failed: Critical patch(es) failed to apply");
+                    Logger.Error("Mod initialization failed: Critical patch(es) failed to apply!");
                 return;
             }
 
             IsModActive = true;
             ModDataStore.Initialize();
             ModSettingsBootstrap.Initialize();
-            Logger.Info("Mod initialization complete - Mod is now ACTIVE");
+            Logger.Info("Mod initialization complete - Mod is now ACTIVE!");
         }
         catch (Exception ex)
         {
-            Logger.Error($"Mod initialization failed with exception: {ex.Message}");
-            Logger.Error($"Stack trace: {ex.StackTrace}");
+            Logger.Error($"Mod initialization failed with exception: {ex.Message}!");
+            Logger.Error($"Stack trace: {ex.StackTrace}!");
             IsModActive = false;
         }
     }

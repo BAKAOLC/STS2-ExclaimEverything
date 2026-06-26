@@ -8,7 +8,7 @@ public sealed class CanvasItemDrawStringPatch : IPatchMethod
 {
     public static string PatchId => "canvas_item_draw_string_exclamation";
     public static bool IsCritical => false;
-    public static string Description => "Transform custom drawn CanvasItem text before display";
+    public static string Description => "Transform custom drawn CanvasItem text before display!";
 
     public static ModPatchTarget[] GetTargets()
     {

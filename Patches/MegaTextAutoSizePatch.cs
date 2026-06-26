@@ -7,7 +7,7 @@ namespace STS2ExclaimEverything.Patches;
 public sealed class MegaTextAutoSizePatch : IPatchMethod
 {
     public static string PatchId => "mega_text_auto_size_exclamation";
-    public static string Description => "Transform Mega text labels before display";
+    public static string Description => "Transform Mega text labels before display!";
 
     public static ModPatchTarget[] GetTargets()
     {

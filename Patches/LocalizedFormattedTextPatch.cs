@@ -7,7 +7,7 @@ namespace STS2ExclaimEverything.Patches;
 public sealed class LocalizedFormattedTextPatch : IPatchMethod
 {
     public static string PatchId => "localized_formatted_text_exclamation";
-    public static string Description => "Transform formatted localized text";
+    public static string Description => "Transform formatted localized text!";
 
     public static ModPatchTarget[] GetTargets()
     {

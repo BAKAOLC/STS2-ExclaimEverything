@@ -9,7 +9,7 @@ public sealed class GodotTextSetterPatch : IPatchMethod
 {
     public static string PatchId => "godot_text_setter_exclamation";
     public static bool IsCritical => false;
-    public static string Description => "Transform generic Godot label text before display";
+    public static string Description => "Transform generic Godot label text before display!";
 
     public static ModPatchTarget[] GetTargets()
     {
