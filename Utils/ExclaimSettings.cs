@@ -9,4 +9,7 @@ public sealed class ExclaimSettings
 
     [JsonPropertyName("append_pure_numeric_terminal_exclamation")]
     public bool AppendPureNumericTerminalExclamation { get; set; }
+
+    [JsonPropertyName("uppercase_convertible_characters")]
+    public bool UppercaseConvertibleCharacters { get; set; }
 }

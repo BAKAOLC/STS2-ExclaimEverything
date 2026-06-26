@@ -9,18 +9,20 @@ internal static class TextTransformer
         return Transform(
             text,
             ExclaimSettingsService.AppendMissingTerminalExclamation,
-            ExclaimSettingsService.AppendPureNumericTerminalExclamation);
+            ExclaimSettingsService.AppendPureNumericTerminalExclamation,
+            ExclaimSettingsService.UppercaseConvertibleCharacters);
     }
 
     public static string TransformPeriodsOnly(string text)
     {
-        return Transform(text, false, false);
+        return Transform(text, false, false, false);
     }
 
     private static string Transform(
         string text,
         bool appendMissingTerminalExclamation,
-        bool appendPureNumericTerminalExclamation)
+        bool appendPureNumericTerminalExclamation,
+        bool uppercaseConvertibleCharacters)
     {
         if (string.IsNullOrEmpty(text))
             return text;
@@ -57,7 +59,7 @@ internal static class TextTransformer
                 continue;
             }
 
-            var replacement = GetReplacement(text, i);
+            var replacement = GetReplacement(text, i, uppercaseConvertibleCharacters);
             if (replacement == text[i])
                 continue;
 
@@ -103,14 +105,16 @@ internal static class TextTransformer
         }
     }
 
-    private static char GetReplacement(string text, int index)
+    private static char GetReplacement(string text, int index, bool uppercaseConvertibleCharacters = false)
     {
-        return text[index] switch
+        var replacement = text[index] switch
         {
             '.' when !IsDecimalPoint(text, index) => '!',
             '。' => '！',
             _ => text[index]
         };
+
+        return uppercaseConvertibleCharacters ? char.ToUpperInvariant(replacement) : replacement;
     }
 
     private static bool IsDecimalPoint(string text, int index)

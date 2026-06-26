@@ -34,12 +34,20 @@ internal static class ModSettingsBootstrap
                     (settings, value) => settings.AppendPureNumericTerminalExclamation = value),
                 () => false);
 
+            var uppercaseConvertibleCharactersBinding = ModSettingsBindings.WithDefault(
+                ModSettingsBindings.Global<ExclaimSettings, bool>(
+                    Const.ModId,
+                    ModDataStore.SettingsKey,
+                    settings => settings.UppercaseConvertibleCharacters,
+                    (settings, value) => settings.UppercaseConvertibleCharacters = value),
+                () => false);
+
             RitsuLibFramework.RegisterModSettings(Const.ModId, page => page
                 .WithModDisplayName(T("Exclaim Everything!", "全都感叹号！"))
                 .WithTitle(T("Settings", "设置"))
                 .WithDescription(T(
-                    "Adjust text exclamation behavior!",
-                    "调整文本感叹号替换行为！"))
+                    "Adjust text exclamation behavior! Some already-created text may require reopening the screen or restarting the game before changes apply!",
+                    "调整文本感叹号替换行为！部分已经创建的文本可能需要重新打开界面或重启游戏后才会生效！"))
                 .AddSection("text", section => section
                     .WithTitle(T("Text", "文本"))
                     .AddToggle(
@@ -55,7 +63,14 @@ internal static class ModSettingsBootstrap
                         appendPureNumericTerminalBinding,
                         T(
                             "When enabled, pure numeric labels such as 123, 1.5, and 50% can also receive missing exclamation marks!",
-                            "开启后，123、1.5、50% 这样的纯数字标签也可以补上缺失的感叹号！"))));
+                            "开启后，123、1.5、50% 这样的纯数字标签也可以补上缺失的感叹号！"))
+                    .AddToggle(
+                        "uppercase_convertible_characters",
+                        T("Uppercase convertible characters", "大写可转换字符"),
+                        uppercaseConvertibleCharactersBinding,
+                        T(
+                            "When enabled, every displayed character that has an uppercase form is converted to uppercase!",
+                            "开启后，显示文本中所有能转换为大写的字符都会变成大写！"))));
 
             _initialized = true;
         }

@@ -33,4 +33,19 @@ internal static class ExclaimSettingsService
             }
         }
     }
+
+    public static bool UppercaseConvertibleCharacters
+    {
+        get
+        {
+            try
+            {
+                return ModDataStore.GetSettings().UppercaseConvertibleCharacters;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
 }
