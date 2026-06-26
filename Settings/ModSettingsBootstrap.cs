@@ -26,6 +26,14 @@ internal static class ModSettingsBootstrap
                     (settings, value) => settings.AppendMissingTerminalExclamation = value),
                 () => true);
 
+            var appendPureNumericTerminalBinding = ModSettingsBindings.WithDefault(
+                ModSettingsBindings.Global<ExclaimSettings, bool>(
+                    Const.ModId,
+                    ModDataStore.SettingsKey,
+                    settings => settings.AppendPureNumericTerminalExclamation,
+                    (settings, value) => settings.AppendPureNumericTerminalExclamation = value),
+                () => false);
+
             RitsuLibFramework.RegisterModSettings(Const.ModId, page => page
                 .WithModDisplayName(T("Exclaim Everything!", "全都感叹号！"))
                 .WithTitle(T("Settings", "设置"))
@@ -40,7 +48,14 @@ internal static class ModSettingsBootstrap
                         appendMissingTerminalBinding,
                         T(
                             "When a displayed line has words but no punctuation at the line end or text end, append an exclamation mark! Pure numeric UI labels are ignored!",
-                            "当显示文本中的一行包含文字、但行尾或文本末尾没有标点时，补上感叹号！纯数字界面标签会被忽略！"))));
+                            "当显示文本中的一行包含文字、但行尾或文本末尾没有标点时，补上感叹号！纯数字界面标签会被忽略！"))
+                    .AddToggle(
+                        "append_pure_numeric_terminal_exclamation",
+                        T("Append marks to pure numbers", "为纯数字补感叹号"),
+                        appendPureNumericTerminalBinding,
+                        T(
+                            "When enabled, pure numeric labels such as 123, 1.5, and 50% can also receive missing exclamation marks!",
+                            "开启后，123、1.5、50% 这样的纯数字标签也可以补上缺失的感叹号！"))));
 
             _initialized = true;
         }

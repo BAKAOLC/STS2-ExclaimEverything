@@ -6,4 +6,7 @@ public sealed class ExclaimSettings
 {
     [JsonPropertyName("append_missing_terminal_exclamation")]
     public bool AppendMissingTerminalExclamation { get; set; } = true;
+
+    [JsonPropertyName("append_pure_numeric_terminal_exclamation")]
+    public bool AppendPureNumericTerminalExclamation { get; set; }
 }

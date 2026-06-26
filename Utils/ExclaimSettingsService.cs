@@ -18,4 +18,19 @@ internal static class ExclaimSettingsService
             }
         }
     }
+
+    public static bool AppendPureNumericTerminalExclamation
+    {
+        get
+        {
+            try
+            {
+                return ModDataStore.GetSettings().AppendPureNumericTerminalExclamation;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+    }
 }

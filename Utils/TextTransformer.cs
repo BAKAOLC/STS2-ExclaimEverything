@@ -1,5 +1,4 @@
 using System.Text;
-using MegaCrit.Sts2.Core.Localization;
 
 namespace STS2ExclaimEverything.Utils;
 
@@ -7,26 +6,31 @@ internal static class TextTransformer
 {
     public static string Transform(string text)
     {
-        return Transform(text, ExclaimSettingsService.AppendMissingTerminalExclamation);
+        return Transform(
+            text,
+            ExclaimSettingsService.AppendMissingTerminalExclamation,
+            ExclaimSettingsService.AppendPureNumericTerminalExclamation);
     }
 
     public static string TransformPeriodsOnly(string text)
     {
-        return Transform(text, false);
+        return Transform(text, false, false);
     }
 
-    private static string Transform(string text, bool appendMissingTerminalExclamation)
+    private static string Transform(
+        string text,
+        bool appendMissingTerminalExclamation,
+        bool appendPureNumericTerminalExclamation)
     {
         if (string.IsNullOrEmpty(text))
             return text;
 
         Dictionary<int, char>? replacements = null;
-        List<int>? insertAfter = null;
+        List<(int Index, char ExclamationMark)>? insertAfter = null;
         var insideTag = false;
         var insideImageBody = false;
         var tagCloseIndex = -1;
         var lineStartIndex = 0;
-        var terminalExclamation = GetCurrentLanguageExclamationMark();
 
         for (var i = 0; i < text.Length; i++)
         {
@@ -74,9 +78,9 @@ internal static class TextTransformer
                 ? replacement
                 : text[i]);
 
-            while (insertAfter != null && insertIndex < insertAfter.Count && insertAfter[insertIndex] == i)
+            while (insertAfter != null && insertIndex < insertAfter.Count && insertAfter[insertIndex].Index == i)
             {
-                builder.Append(terminalExclamation);
+                builder.Append(insertAfter[insertIndex].ExclamationMark);
                 insertIndex++;
             }
         }
@@ -86,14 +90,16 @@ internal static class TextTransformer
         void QueueMissingTerminalExclamation(int lineStart, int lineEnd)
         {
             if (!appendMissingTerminalExclamation ||
-                !TryGetLineTerminalInfo(text, lineStart, lineEnd, out var lastVisibleIndex,
-                    out var terminalChar, out var hasSentenceText) ||
-                !hasSentenceText ||
-                HasTerminalSymbol(terminalChar))
+                !TryGetLineTerminalInfo(text, lineStart, lineEnd, out var insertAfterIndex,
+                    out var terminalChar, out var hasAppendableContent, out var hasCjkCharacter,
+                    out var isPureNumericContent) ||
+                !hasAppendableContent ||
+                isPureNumericContent && !appendPureNumericTerminalExclamation ||
+                HasBlockingTerminalSymbol(terminalChar))
                 return;
 
             insertAfter ??= [];
-            insertAfter.Add(lastVisibleIndex);
+            insertAfter.Add((insertAfterIndex, hasCjkCharacter ? '！' : '!'));
         }
     }
 
@@ -120,22 +126,81 @@ internal static class TextTransformer
         return c is '\r' or '\n';
     }
 
-    private static bool HasTerminalSymbol(char c)
+    private static bool HasBlockingTerminalSymbol(char c)
     {
+        if (IsPercentSign(c))
+            return false;
+
         return char.IsPunctuation(c) || char.IsSymbol(c);
+    }
+
+    private static bool IsPercentSign(char c)
+    {
+        return c is '%' or '％';
+    }
+
+    private static bool IsOpeningBracket(char c)
+    {
+        return c is '(' or '（' or '[' or '【' or '{' or '「' or '『' or '《' or '〈';
+    }
+
+    private static bool IsClosingBracket(char c)
+    {
+        return c is ')' or '）' or ']' or '】' or '}' or '」' or '』' or '》' or '〉';
+    }
+
+    private static bool IsBracket(char c)
+    {
+        return IsOpeningBracket(c) || IsClosingBracket(c);
+    }
+
+    private static bool IsMatchingBracket(char opening, char closing)
+    {
+        return (opening, closing) is
+            ('(', ')') or
+            ('（', '）') or
+            ('[', ']') or
+            ('【', '】') or
+            ('{', '}') or
+            ('「', '」') or
+            ('『', '』') or
+            ('《', '》') or
+            ('〈', '〉');
+    }
+
+    private static bool IsCjkCharacter(char c)
+    {
+        return c is >= '\u3400' and <= '\u9FFF' or
+            >= '\uF900' and <= '\uFAFF' or
+            >= '\u3040' and <= '\u30FF' or
+            >= '\uAC00' and <= '\uD7AF';
+    }
+
+    private static bool IsNumericSyntax(char c)
+    {
+        return c is '.' or '．' or ',' or '，' or '%' or '％' or '+' or '-' or '＋' or '－' or '/' or '／';
     }
 
     private static bool TryGetLineTerminalInfo(
         string text,
         int startIndex,
         int endIndex,
-        out int lastVisibleIndex,
+        out int insertAfterIndex,
         out char terminalChar,
-        out bool hasSentenceText)
+        out bool hasAppendableContent,
+        out bool hasCjkCharacter,
+        out bool isPureNumericContent)
     {
-        lastVisibleIndex = -1;
+        insertAfterIndex = -1;
+        var firstVisibleIndex = -1;
+        var lastVisibleIndex = -1;
+        var lastNonBracketIndex = -1;
+        var hasDigit = false;
+        var hasNonNumericContent = false;
         terminalChar = '\0';
-        hasSentenceText = false;
+        hasAppendableContent = false;
+        hasCjkCharacter = false;
+        isPureNumericContent = false;
 
         var insideImageBody = false;
         for (var i = startIndex; i < endIndex; i++)
@@ -157,29 +222,82 @@ internal static class TextTransformer
             if (char.IsWhiteSpace(text[i]))
                 continue;
 
+            if (firstVisibleIndex < 0)
+                firstVisibleIndex = i;
+
             lastVisibleIndex = i;
-            terminalChar = GetReplacement(text, i);
-            if (char.IsLetter(text[i]))
-                hasSentenceText = true;
+            if (!IsBracket(text[i]))
+            {
+                terminalChar = GetReplacement(text, i);
+                lastNonBracketIndex = i;
+            }
+
+            if (IsCjkCharacter(text[i]))
+                hasCjkCharacter = true;
+
+            if (IsBracket(text[i]))
+                continue;
+
+            if (char.IsLetterOrDigit(text[i]))
+            {
+                hasAppendableContent = true;
+                if (char.IsDigit(text[i]))
+                    hasDigit = true;
+                else
+                    hasNonNumericContent = true;
+            }
+            else if (!IsNumericSyntax(text[i]))
+            {
+                hasNonNumericContent = true;
+            }
         }
 
-        return lastVisibleIndex >= 0;
+        if (lastVisibleIndex < 0 || terminalChar == '\0')
+            return false;
+
+        insertAfterIndex = IsFullyWrappedByOuterBrackets(text, firstVisibleIndex, lastVisibleIndex)
+            ? lastNonBracketIndex
+            : lastVisibleIndex;
+        isPureNumericContent = hasDigit && !hasNonNumericContent;
+        return insertAfterIndex >= 0;
     }
 
-    private static char GetCurrentLanguageExclamationMark()
+    private static bool IsFullyWrappedByOuterBrackets(string text, int firstVisibleIndex, int lastVisibleIndex)
     {
-        try
+        if (firstVisibleIndex < 0 ||
+            lastVisibleIndex <= firstVisibleIndex ||
+            !IsOpeningBracket(text[firstVisibleIndex]) ||
+            !IsMatchingBracket(text[firstVisibleIndex], text[lastVisibleIndex]))
+            return false;
+
+        var depth = 0;
+        var insideImageBody = false;
+        for (var i = firstVisibleIndex; i <= lastVisibleIndex; i++)
         {
-            return LocManager.Instance?.Language?.ToLowerInvariant() switch
+            if (text[i] == '[' && TryReadBbCodeTag(text, i, out var tagCloseIndex,
+                    out var isImageOpen, out var isImageClose))
             {
-                "zhs" or "jpn" or "kor" => '！',
-                _ => '!'
-            };
+                insideImageBody = insideImageBody && !isImageClose;
+                if (isImageOpen)
+                    insideImageBody = true;
+
+                i = tagCloseIndex;
+                continue;
+            }
+
+            if (insideImageBody || !IsBracket(text[i]))
+                continue;
+
+            if (IsOpeningBracket(text[i]))
+                depth++;
+            else if (IsClosingBracket(text[i]))
+                depth--;
+
+            if (depth == 0 && i < lastVisibleIndex)
+                return false;
         }
-        catch
-        {
-            return '!';
-        }
+
+        return depth == 0;
     }
 
     private static bool TryReadBbCodeTag(

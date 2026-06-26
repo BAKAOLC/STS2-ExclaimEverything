@@ -49,6 +49,7 @@ public static class Main
     {
         patcher.RegisterPatch<LocalizedFormattedTextPatch>();
         patcher.RegisterPatch<MegaTextAutoSizePatch>();
+        patcher.RegisterPatch<MegaTextReadyPatch>();
         patcher.RegisterPatch<GodotTextSetterPatch>();
         patcher.RegisterPatch<CanvasItemDrawStringPatch>();
     }
