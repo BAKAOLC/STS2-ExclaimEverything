@@ -6,6 +6,9 @@ internal static class TextTransformer
 {
     public static string Transform(string text)
     {
+        if (!ExclaimSettingsService.Enabled)
+            return text;
+
         return Transform(
             text,
             ExclaimSettingsService.AppendMissingTerminalExclamation,
@@ -15,6 +18,9 @@ internal static class TextTransformer
 
     public static string TransformPeriodsOnly(string text)
     {
+        if (!ExclaimSettingsService.Enabled)
+            return text;
+
         return Transform(text, false, false, false);
     }
 

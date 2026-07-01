@@ -8,8 +8,9 @@ A RitsuLib-based Slay the Spire 2 mod that makes displayed text more enthusiasti
 - Replaces Chinese full stops with Chinese exclamation marks!
 - Preserves decimal points such as `1.5` and `0.4.38`!
 - Preserves BBCode image tags so inline icons keep rendering!
+- Can be toggled on or off from the in-game RitsuLib settings page!
 - Optionally appends a missing final exclamation mark at line breaks or text endings!
-- Registers a RitsuLib settings page for the optional missing-mark behavior!
+- Registers a RitsuLib settings page for runtime behavior options!
 
 ## Requirements!
 

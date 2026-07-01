@@ -4,6 +4,9 @@ namespace STS2ExclaimEverything.Utils;
 
 public sealed class ExclaimSettings
 {
+    [JsonPropertyName("enabled")]
+    public bool Enabled { get; set; } = true;
+
     [JsonPropertyName("append_missing_terminal_exclamation")]
     public bool AppendMissingTerminalExclamation { get; set; } = true;
 

@@ -18,6 +18,14 @@ internal static class ModSettingsBootstrap
             if (_initialized)
                 return;
 
+            var enabledBinding = ModSettingsBindings.WithDefault(
+                ModSettingsBindings.Global<ExclaimSettings, bool>(
+                    Const.ModId,
+                    ModDataStore.SettingsKey,
+                    settings => settings.Enabled,
+                    (settings, value) => settings.Enabled = value),
+                () => true);
+
             var appendMissingTerminalBinding = ModSettingsBindings.WithDefault(
                 ModSettingsBindings.Global<ExclaimSettings, bool>(
                     Const.ModId,
@@ -48,6 +56,15 @@ internal static class ModSettingsBootstrap
                 .WithDescription(T(
                     "Adjust text exclamation behavior! Some already-created text may require reopening the screen or restarting the game before changes apply!",
                     "调整文本感叹号替换行为！部分已经创建的文本可能需要重新打开界面或重启游戏后才会生效！"))
+                .AddSection("general", section => section
+                    .WithTitle(T("General", "通用"))
+                    .AddToggle(
+                        "enabled",
+                        T("Enable text exclamation", "启用文本感叹号"),
+                        enabledBinding,
+                        T(
+                            "When disabled, this mod leaves newly displayed text unchanged without disabling the mod!",
+                            "关闭后，本模组会让新显示的文本保持原样，无需禁用模组！")))
                 .AddSection("text", section => section
                     .WithTitle(T("Text", "文本"))
                     .AddToggle(

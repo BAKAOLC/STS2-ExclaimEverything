@@ -4,6 +4,21 @@ namespace STS2ExclaimEverything.Utils;
 
 internal static class ExclaimSettingsService
 {
+    public static bool Enabled
+    {
+        get
+        {
+            try
+            {
+                return ModDataStore.GetSettings().Enabled;
+            }
+            catch
+            {
+                return true;
+            }
+        }
+    }
+
     public static bool AppendMissingTerminalExclamation
     {
         get
